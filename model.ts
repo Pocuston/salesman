@@ -39,7 +39,8 @@ export type SearchState = Readonly<{
   currentPosition: Position;
   targetPosition: Position;
   graph: GraphNode;
-  openList: PositionStack;
+  openListStack: PositionStack;
+  openListSet: PositionSet;
   closedList: PositionSet;
 }>;
 
@@ -94,7 +95,8 @@ const step = ({currentPosition, closedList, citiesFound, openList}: SearchState,
     const {canMoveTo, canSee} = lookAround(currentPosition, map);
 
     //add new visitable positions to open list
-    openList = [...openList, ...canMoveTo];
+    //TODO if not in open list olready
+    openList = [...openList, ...canMoveTo.filter(position => notVisited(position, closedList))];
 
     //add new nodes edges to graph
 
@@ -107,7 +109,7 @@ const step = ({currentPosition, closedList, citiesFound, openList}: SearchState,
     }
 }
 
-const lookAround = (from: Position, {grid}: World): { canMoveTo: Position[], canSee: Position[] } => {
+const lookAround = (from: Position, {grid}: World) => {
   return { canMoveTo: canMoveTo(from, grid), canSee: canSee(from, grid) };
 }
 
@@ -115,21 +117,25 @@ const canMoveTo = (from: Position, grid: CellType[][]): Position[] => {
   const moveToOffsets = [[1,0], [-1,0], [0,1], [0,-1]];
   return moveToOffsets
     .map<Position>(([x,y]) => [from[X] + x, from[Y] + y])
-    .filter(position => cellType(position, grid) !== "WALL");
+    .filter(position => visitable(cellType(position, grid)));
 }
 
 const canSee = (from: Position, grid: CellType[][]): Position[] => {
   const visibleOffsets = [[1,1], [1,-1], [-1,1], [-1,-1]];
   return visibleOffsets
   .map<Position>(([x,y]) => [from[X] + x, from[Y] + y])
-  .filter(position => cellType(position, grid) !== "WALL");
+  .filter(position => visitable(cellType(position, grid)));
 }
 
 const cellType = (position: Position, grid: CellType[][]): CellType | undefined => {
   return grid[position[X]]?.[position[Y]];
 }
 
-const visitable = (cellType: CellType): boolean => {
-  return
+const visitable = (cellType: CellType | undefined): boolean => {
+  return cellType !== undefined && cellType !== "WALL";
+}
+
+const notVisited = (position: Position, closedList: PositionSet): boolean => {
+  return !closedList.has(position);
 }
 
