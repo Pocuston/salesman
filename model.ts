@@ -5,20 +5,13 @@
 //https://robotics.stackexchange.com/questions/952/whats-an-efficient-way-to-visit-every-reachable-space-on-a-grid-with-unknown-ob
 //https://stackoverflow.com/questions/11555774/explore-grid-with-obstacles/11556238#11556238
 //https://stackoverflow.com/questions/40596061/traversing-every-cell-possible-in-2d-array
-//
 
-import {PositionSet} from "./position-set";
+
+import {Set, OrderedSet} from "immutable";
+import {offset, position, Position} from "./position";
+
 
 export type CellType = "WALL" | "ROAD" | "CITY";
-export const visitableCells: CellType[] = ["ROAD", "CITY"];
-
-export type X = number;
-export type Y = number;
-
-export const X = 0;
-export const Y = 1;
-
-export type Position = readonly [X, Y];
 
 export type GraphNode = Readonly<{
   readonly position: Position;
@@ -31,33 +24,28 @@ export type World = Readonly<{
   readonly grid: CellType[][];
   readonly hometown: Position;
 }>;
-
-export type PositionStack = Position[];
-
 export type SearchState = Readonly<{
-  citiesFound: Position[];
+  citiesFound: Set<Position>;
   currentPosition: Position;
-  targetPosition: Position;
+  targetPosition: Position | undefined;
   graph: GraphNode;
-  openListStack: PositionStack;
-  openListSet: PositionSet;
-  closedList: PositionSet;
+  openList: OrderedSet<Position>;
+  closedList: Set<Position>;
+  isDone: boolean;
 }>;
 
-const eq = (a: Position, b: Position): boolean => a[0] === b[0] && a[1] === b[1];
+export const initializeWorld = (width: number, height: number, salesmanHome?: Position ): World => {
 
-const initializeGrid = (width: number, height: number, salesmanHome?: Position ): World => {
-
-  const grid: World = {
+  const world: World = {
     //TODO add cities and obstacles
     grid: Array.from({ length: height }, () => Array.from({ length: width }, () => "ROAD")),
-    hometown: salesmanHome || [0, 0],
+    hometown: position(0,0),
   }
 
-  return grid;
+  return world;
 }
 
-const initState = (map: World): SearchState => {
+export const initState = (map: World): SearchState => {
   const { hometown } = map;
 
   const graph: GraphNode = {
@@ -66,12 +54,13 @@ const initState = (map: World): SearchState => {
   }
 
   const searchState: SearchState = {
-    citiesFound: [],
+    citiesFound: Set<Position>(),
     currentPosition: hometown,
-    targetPosition: hometown,
+    targetPosition: undefined,
     graph,
-    openList: [],
-    closedList: new PositionSet(),
+    openList: OrderedSet<Position>(),
+    closedList: Set<Position>(),
+    isDone: false,
   }
 
   return searchState;
@@ -80,62 +69,76 @@ const initState = (map: World): SearchState => {
 const step = ({currentPosition, closedList, citiesFound, openList}: SearchState, map: World): SearchState => {
 
     //add current node to close list
-    //TODO: make the set it immutable
-    closedList.add(currentPosition);
+    closedList = closedList.add(currentPosition);
 
     //remove current node from open list
-    openList = openList.filter(position => !eq(position, currentPosition));
+    openList = openList.delete(currentPosition);
 
     //if city, add to citiesFound
     if (cellType(currentPosition, map.grid) === "CITY") {
-      citiesFound = [...citiesFound, currentPosition];
+      citiesFound = citiesFound.add(currentPosition);
     }
 
     //look around
-    const {canMoveTo, canSee} = lookAround(currentPosition, map);
+    const whatCanWeSee = whatCanSee(currentPosition, map.grid);
+    const whereCanWeGo = whereCanGo(currentPosition, map.grid);
 
-    //add new visitable positions to open list
-    //TODO if not in open list olready
-    openList = [...openList, ...canMoveTo.filter(position => notVisited(position, closedList))];
+    const newArea = Set.union<Position>([whatCanWeSee, whereCanWeGo])
+      .subtract(openList)
+      .subtract(closedList);
+
+    //add new canMoveTo positions to open list
+    openList = openList.union(newArea);
 
     //add new nodes edges to graph
 
     //move to next position in open list
       //prioritize, heuristics
         //stubs first (min gaps)
-    return {
-      citiesFound,
-
-    }
+    // return {
+    //   citiesFound,
+    //
+    // }
 }
 
-const lookAround = (from: Position, {grid}: World) => {
-  return { canMoveTo: canMoveTo(from, grid), canSee: canSee(from, grid) };
+
+/**
+ * All positions where we can go to from our position
+ */
+const whereCanGo = (from: Position, grid: CellType[][]): Set<Position> => {
+  const possibleMoves = [offset(1,0), offset(-1,0), offset(0,1), offset(0,-1)];
+  return Set.of<Position>(...possibleMoves
+      .map(offset => position(from.x + offset.x, from.y + offset.y))
+      .filter(move => canMoveTo(cellType(move, grid))));
 }
 
-const canMoveTo = (from: Position, grid: CellType[][]): Position[] => {
-  const moveToOffsets = [[1,0], [-1,0], [0,1], [0,-1]];
-  return moveToOffsets
-    .map<Position>(([x,y]) => [from[X] + x, from[Y] + y])
-    .filter(position => visitable(cellType(position, grid)));
+/**
+ * All visitable positions that we can see from our position.
+ * Does not include positions we can go to (use {@link whereCanGo} for that).
+ */
+const whatCanSee = (from: Position, grid: CellType[][]): Set<Position> => {
+  const visibleArea = [offset(1,1), offset(1,-1), offset(-1,1), offset(-1,-1)];
+  return Set.of<Position>(...visibleArea
+    .map(offset => position(from.x + offset.x, from.y + offset.y))
+    .filter(move => canMoveTo(cellType(move, grid))));
 }
 
-const canSee = (from: Position, grid: CellType[][]): Position[] => {
-  const visibleOffsets = [[1,1], [1,-1], [-1,1], [-1,-1]];
-  return visibleOffsets
-  .map<Position>(([x,y]) => [from[X] + x, from[Y] + y])
-  .filter(position => visitable(cellType(position, grid)));
-}
-
+/**
+ * Cell type at position. Undefined if out of bounds.
+ */
 const cellType = (position: Position, grid: CellType[][]): CellType | undefined => {
-  return grid[position[X]]?.[position[Y]];
+  return grid[position.x]?.[position.y];
 }
 
-const visitable = (cellType: CellType | undefined): boolean => {
+/**
+ * Can we move to this cell type?
+ */
+const canMoveTo = (cellType: CellType | undefined): boolean => {
   return cellType !== undefined && cellType !== "WALL";
 }
 
-const notVisited = (position: Position, closedList: PositionSet): boolean => {
-  return !closedList.has(position);
+const extendGraph = (graph: Graph, newArea: Set<Position>): Graph => {
+  return graph;
 }
+
 
