@@ -1,7 +1,7 @@
 import { Position, squareAround, X, Y } from "./position";
 import { add, PositionSet, remove, subtract, toList } from "./position-set";
 import { minBy } from "lodash";
-import { manhattanDistance } from "./a-star";
+import { manhattanDistance } from "./aStar";
 
 export type CellType = "WALL" | "ROAD" | "CITY";
 

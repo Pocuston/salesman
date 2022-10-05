@@ -42,7 +42,7 @@ const WALKABLE_AREA_OFFSETS = [
   offset(-1, 0),
   offset(0, -1),
   offset(1, 0),
-  offset(0, -1),
+  offset(0, 1),
 ];
 
 export const walkableFrom = (from: Position): Position[] =>
