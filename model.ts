@@ -1,7 +1,7 @@
-import { Position, squareAround, X, Y } from "./position";
+import { equal, Position, squareAround, walkableFrom, X, Y } from "./position";
 import { add, PositionSet, remove, subtract, toList } from "./position-set";
 import { minBy } from "lodash";
-import { manhattanDistance } from "./aStar";
+import { findRoute, manhattanDistance } from "./aStar";
 
 export type CellType = "WALL" | "ROAD" | "CITY";
 
@@ -62,6 +62,9 @@ export const step = (
     //add current node to close list
     closedListSet = add(closedListSet, currentPosition);
 
+    //add current node to graph
+    graph = add(graph, currentPosition);
+
     //remove current node from open list
     openListSet = remove(openListSet, currentPosition);
 
@@ -71,26 +74,20 @@ export const step = (
     }
 
     const newPaths = subtract(
-      //TODO add new paths only if reachable from current graph?
       whereCanGoFrom(currentPosition, grid),
       closedListSet
     );
 
     //add new explored positions to open list
-    //TODO add new paths only if reachable from current graph?
     openListSet = add(openListSet, ...newPaths);
 
     //update the graph of whole explored area
-    //TODO add new paths only if reachable from current graph?
     graph = add(graph, ...newPaths);
 
     //TODO: prioritize, heuristics
     //TODO: stubs first (min gaps)
-    const nextMove =
-      chooseNextMove(currentPosition, openListSet) ?? currentPosition;
-    //TODO: if next move not directly reachable, find path to it
-    //TODO: next move maybe not reachable at all!
-    plannedRoute = [nextMove];
+    plannedRoute =
+      chooseNextRoute(currentPosition, openListSet, graph) ?? currentPosition;
   }
 
   return {
@@ -104,8 +101,9 @@ export const step = (
 };
 
 const whereCanGoFrom = (from: Position, grid: CellType[][]): Position[] => {
-  //TODO add
-  return squareAround(from).filter((move) => canMoveTo(cellAt(move, grid)));
+  //TODO...
+  //return squareAround(from).filter((move) => canMoveTo(cellAt(move, grid)));
+  return walkableFrom(from).filter((move) => canMoveTo(cellAt(move, grid)));
 };
 
 /**
@@ -126,12 +124,23 @@ const canMoveTo = (cellType: CellType | undefined): boolean => {
   return cellType !== undefined && cellType !== "WALL";
 };
 
-const chooseNextMove = (
+const chooseNextRoute = (
   currentPosition: Position,
-  openListSet: PositionSet
-): Position | undefined => {
+  openListSet: PositionSet,
+  graph: PositionSet
+): Position[] => {
   const list = toList(openListSet);
-  return minBy(list, (position) =>
+  let nextMove = minBy(list, (position) =>
     manhattanDistance(currentPosition, position)
   );
+
+  if (nextMove === undefined) {
+    return [];
+  }
+
+  if (walkableFrom(currentPosition).some((p) => equal(p, nextMove!))) {
+    return [nextMove];
+  }
+
+  return findRoute(currentPosition, nextMove, graph);
 };
