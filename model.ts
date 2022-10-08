@@ -85,12 +85,14 @@ export const step = (
     graph = add(graph, ...newPaths);
 
     //TODO: prioritize, heuristics
+    //TODO: maxBy count of neighbours in closed set
     //TODO: stubs first (min gaps)
     plannedRoute =
-      chooseNextRoute(currentPosition, openListSet, graph) ?? currentPosition;
+      chooseNextRoute(currentPosition, openListSet, graph, citiesFound.at(0)) ??
+      currentPosition;
   }
 
-  return {
+  const newState = {
     stepCount: ++stepCount,
     closedListSet,
     openListSet,
@@ -98,6 +100,10 @@ export const step = (
     graph,
     plannedRoute,
   };
+
+  console.log(newState);
+
+  return newState;
 };
 
 const whereCanGoFrom = (from: Position, grid: CellType[][]): Position[] => {
@@ -127,15 +133,19 @@ const canMoveTo = (cellType: CellType | undefined): boolean => {
 const chooseNextRoute = (
   currentPosition: Position,
   openListSet: PositionSet,
-  graph: PositionSet
+  graph: PositionSet,
+  hometown: Position | undefined
 ): Position[] => {
   const list = toList(openListSet);
   let nextMove = minBy(list, (position) =>
     manhattanDistance(currentPosition, position)
   );
 
+  //there is no more exploration move, lets go home
   if (nextMove === undefined) {
-    return [];
+    return hometown !== undefined && !equal(currentPosition, hometown)
+      ? findRoute(currentPosition, hometown, graph)
+      : [];
   }
 
   if (walkableFrom(currentPosition).some((p) => equal(p, nextMove!))) {
@@ -144,3 +154,6 @@ const chooseNextRoute = (
 
   return findRoute(currentPosition, nextMove, graph);
 };
+
+export const isFinished = (state: SearchState): boolean =>
+  state.plannedRoute.length === 0;

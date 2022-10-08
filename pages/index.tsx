@@ -1,34 +1,81 @@
 import type { NextPage } from "next";
-import Head from "next/head";
-import Image from "next/image";
-import styles from "../styles/Home.module.css";
+import map from "../map";
+import { initState, initWorld, isFinished, step } from "../model";
+import { useState } from "react";
+import Map from "../components/Map";
+
+const world = initWorld(map, [1, 1]);
 
 const Home: NextPage = () => {
+  const [searchState, setSearchState] = useState(() => initState(world));
+
+  function handleStepClick() {
+    if (!isFinished(searchState)) {
+      setSearchState((state) => step(state, world));
+    }
+  }
+
+  function handleResetClick() {
+    setSearchState(initState(world));
+  }
+
   return (
     <div className="container">
-      <div className="Controls">Controls</div>
+      <div className="Controls">
+        {/* TODO play / stop buttons */}
+        <button className="button">Play</button>
+        <button
+          className="button"
+          onClick={handleStepClick}
+          disabled={isFinished(searchState)}
+        >
+          Take a step
+        </button>
+
+        <button className="button button-clear" onClick={handleResetClick}>
+          Reset
+        </button>
+        <div>
+          <h5>Cities found:</h5>
+          {searchState.citiesFound.map((_, index) => index + 1).join(",")}
+        </div>
+      </div>
       <div className="Info">Info</div>
-      <div className="Map">Map</div>
+      <div className="Map">
+        <Map state={searchState} world={world} />
+      </div>
       <style jsx>{`
         .container {
           display: grid;
-          grid-template-columns: 300px 1fr;
-          grid-template-rows: 0.8fr 1.2fr;
-          gap: 0px 0px;
+          grid-template-columns: 200px 0.8fr;
+          grid-template-rows: 1.4fr 0.6fr;
+          gap: 8px 8px;
           grid-auto-flow: row;
-          height: 100vh;
+          grid-template-areas:
+            "Controls Map"
+            "Info Info";
         }
 
         .Controls {
-          grid-area: 1 / 1 / 3 / 2;
-        }
-
-        .Info {
-          grid-area: 2 / 1 / 3 / 2;
+          grid-area: Controls;
         }
 
         .Map {
-          grid-area: 1 / 2 / 3 / 3;
+          grid-area: Map;
+        }
+
+        .Info {
+          grid-area: Info;
+        }
+
+        .container {
+          height: 100vh;
+          margin: 8px;
+        }
+
+        .Controls {
+          display: flex;
+          flex-direction: column;
         }
       `}</style>
     </div>
