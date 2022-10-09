@@ -4,33 +4,27 @@ import { initState, initWorld, isFinished, step } from "../model";
 import { useState } from "react";
 import Map from "../components/Map";
 
-const world = initWorld(map, [1, 1]);
+const world = initWorld(map, [29, 19]);
 
 const Home: NextPage = () => {
   const [searchState, setSearchState] = useState(() => initState(world));
 
-  function handleStepClick() {
-    if (!isFinished(searchState)) {
-      setSearchState((state) => step(state, world));
-    }
-  }
+  const handleStepClick = () => {
+    //if (!isFinished(searchState)) {
+    setSearchState((currentState) => step(currentState, world));
+    //}
+  };
 
-  function handleResetClick() {
+  const handleResetClick = () => {
     setSearchState(initState(world));
-  }
+  };
 
   return (
     <div className="container">
       <div className="Controls">
         {/* TODO play / stop buttons */}
         <button className="button">Play</button>
-        <button
-          className="button"
-          onClick={handleStepClick}
-          disabled={isFinished(searchState)}
-        >
-          Take a step
-        </button>
+        {true && <button onClick={handleStepClick}>Take a step</button>}
 
         <button className="button button-clear" onClick={handleResetClick}>
           Reset

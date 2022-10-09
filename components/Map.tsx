@@ -2,6 +2,7 @@ import { SearchState, World, CellType } from "../model";
 import pixi from "pixi.js";
 import { Stage, Sprite } from "@inlet/react-pixi";
 import { has } from "../position-set";
+import { X, Y } from "../position";
 
 type MapProps = {
   state: SearchState;
@@ -41,6 +42,7 @@ const World = ({ world, state }: { world: World; state: SearchState }) => {
   const walls: JSX.Element[] = [];
   world.grid.forEach((row, y) => {
     row.forEach((field, x) => {
+      // TODO: render city number
       if (renderable(field)) {
         walls.push(
           <Sprite image={textures[field]} x={x * fieldSize} y={y * fieldSize} />
@@ -61,12 +63,11 @@ const World = ({ world, state }: { world: World; state: SearchState }) => {
 };
 
 const Salesman = ({ state }: { state: SearchState }) => {
-  const [position] = state.plannedRoute;
-  return position ? (
+  return (
     <Sprite
       image="./resources/salesman.png"
-      x={position[0] * fieldSize}
-      y={position[1] * fieldSize}
+      x={state.currentPosition[X] * fieldSize}
+      y={state.currentPosition[Y] * fieldSize}
     />
-  ) : null;
+  );
 };
