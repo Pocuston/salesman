@@ -1,6 +1,5 @@
-import { initWorld, initState, SearchState, step, CellType } from "./model";
-import { from, hasPosition, PositionSet, toList } from "./position-set";
-import { Position } from "./position";
+import { CellType, initState, initWorld, State, step } from "./model";
+import { from, toList } from "./position-set";
 
 const smallGrid: CellType[][] = [
   ["CITY", "WALL", "ROAD", "CITY"],
@@ -8,6 +7,7 @@ const smallGrid: CellType[][] = [
   ["ROAD", "WALL", "ROAD", "CITY"],
 ];
 
+// TODO cleanup tests
 test("smoke test on 4 x 3 map", () => {
   const world = initWorld(smallGrid, [1, 1]);
 
@@ -64,9 +64,12 @@ test("smoke test on 4 x 3 map", () => {
   //step 13: [2, 2]
   const state13 = step(state12, world);
   assertStep13(state13);
+
+  const state14 = step(state13, world);
+  assertStep14(state14);
 });
 
-function assertStep1(state: SearchState) {
+function assertStep1(state: State) {
   expect(state.citiesFound).toEqual([[1, 1]]);
   expect(state.closedListSet).toEqual(from([1, 1]));
   expect(toList(state.openListSet)).toEqual([
@@ -78,35 +81,22 @@ function assertStep1(state: SearchState) {
     [1, 1],
     [2, 1],
   ]);
-  expect(state.plannedRoute).toEqual([[0, 1]]);
+  expect(state.plannedRoute).toEqual([]);
+  expect(state.currentPosition).toEqual([0, 1]);
   expect(state.stepCount).toEqual(1);
 }
 
-function assertStep2(state: SearchState) {
+function assertStep2(state: State) {
   expect(state.citiesFound).toEqual([[1, 1]]);
   expect(state.closedListSet).toEqual(from([1, 1], [0, 1]));
   expect(state.openListSet).toEqual(from([0, 0], [0, 2], [2, 1]));
   expect(state.graph).toEqual(from([0, 1], [1, 1], [2, 1], [0, 0], [0, 2]));
-  expect(state.plannedRoute).toEqual([[0, 0]]);
+  expect(state.plannedRoute).toEqual([]);
+  expect(state.currentPosition).toEqual([0, 0]);
   expect(state.stepCount).toEqual(2);
 }
 
-function assertStep3(state: SearchState) {
-  expect(state.citiesFound).toEqual([
-    [1, 1],
-    [0, 0],
-  ]);
-  expect(state.closedListSet).toEqual(from([1, 1], [0, 1], [0, 0]));
-  expect(state.openListSet).toEqual(from([0, 2], [2, 1]));
-  expect(state.graph).toEqual(from([0, 1], [1, 1], [2, 1], [0, 0], [0, 2]));
-  expect(state.plannedRoute).toEqual([
-    [0, 1],
-    [0, 2],
-  ]);
-  expect(state.stepCount).toEqual(3);
-}
-
-function assertStep4(state: SearchState) {
+function assertStep3(state: State) {
   expect(state.citiesFound).toEqual([
     [1, 1],
     [0, 0],
@@ -115,10 +105,24 @@ function assertStep4(state: SearchState) {
   expect(state.openListSet).toEqual(from([0, 2], [2, 1]));
   expect(state.graph).toEqual(from([0, 1], [1, 1], [2, 1], [0, 0], [0, 2]));
   expect(state.plannedRoute).toEqual([[0, 2]]);
+  expect(state.currentPosition).toEqual([0, 1]);
+  expect(state.stepCount).toEqual(3);
+}
+
+function assertStep4(state: State) {
+  expect(state.citiesFound).toEqual([
+    [1, 1],
+    [0, 0],
+  ]);
+  expect(state.closedListSet).toEqual(from([1, 1], [0, 1], [0, 0]));
+  expect(state.openListSet).toEqual(from([0, 2], [2, 1]));
+  expect(state.graph).toEqual(from([0, 1], [1, 1], [2, 1], [0, 0], [0, 2]));
+  expect(state.plannedRoute).toEqual([]);
+  expect(state.currentPosition).toEqual([0, 2]);
   expect(state.stepCount).toEqual(4);
 }
 
-function assertStep5(state: SearchState) {
+function assertStep5(state: State) {
   expect(state.citiesFound).toEqual([
     [1, 1],
     [0, 0],
@@ -127,29 +131,14 @@ function assertStep5(state: SearchState) {
   expect(toList(state.openListSet)).toEqual([[2, 1]]);
   expect(state.graph).toEqual(from([0, 1], [1, 1], [2, 1], [0, 0], [0, 2]));
   expect(state.plannedRoute).toEqual([
-    [0, 1],
     [1, 1],
     [2, 1],
   ]);
+  expect(state.currentPosition).toEqual([0, 1]);
   expect(state.stepCount).toEqual(5);
 }
 
-function assertStep6(state: SearchState) {
-  expect(state.citiesFound).toEqual([
-    [1, 1],
-    [0, 0],
-  ]);
-  expect(state.closedListSet).toEqual(from([1, 1], [0, 1], [0, 0], [0, 2]));
-  expect(toList(state.openListSet)).toEqual([[2, 1]]);
-  expect(state.graph).toEqual(from([0, 1], [1, 1], [2, 1], [0, 0], [0, 2]));
-  expect(state.plannedRoute).toEqual([
-    [1, 1],
-    [2, 1],
-  ]);
-  expect(state.stepCount).toEqual(6);
-}
-
-function assertStep7(state: SearchState) {
+function assertStep6(state: State) {
   expect(state.citiesFound).toEqual([
     [1, 1],
     [0, 0],
@@ -158,10 +147,24 @@ function assertStep7(state: SearchState) {
   expect(toList(state.openListSet)).toEqual([[2, 1]]);
   expect(state.graph).toEqual(from([0, 1], [1, 1], [2, 1], [0, 0], [0, 2]));
   expect(state.plannedRoute).toEqual([[2, 1]]);
+  expect(state.currentPosition).toEqual([1, 1]);
+  expect(state.stepCount).toEqual(6);
+}
+
+function assertStep7(state: State) {
+  expect(state.citiesFound).toEqual([
+    [1, 1],
+    [0, 0],
+  ]);
+  expect(state.closedListSet).toEqual(from([1, 1], [0, 1], [0, 0], [0, 2]));
+  expect(toList(state.openListSet)).toEqual([[2, 1]]);
+  expect(state.graph).toEqual(from([0, 1], [1, 1], [2, 1], [0, 0], [0, 2]));
+  expect(state.currentPosition).toEqual([2, 1]);
+  expect(state.plannedRoute).toEqual([]);
   expect(state.stepCount).toEqual(7);
 }
 
-function assertStep8(state: SearchState) {
+function assertStep8(state: State) {
   expect(state.citiesFound).toEqual([
     [1, 1],
     [0, 0],
@@ -177,11 +180,12 @@ function assertStep8(state: SearchState) {
   expect(state.graph).toEqual(
     from([0, 1], [1, 1], [2, 1], [0, 0], [0, 2], [2, 0], [2, 2], [3, 1])
   );
-  expect(state.plannedRoute).toEqual([[2, 0]]);
+  expect(state.plannedRoute).toEqual([]);
+  expect(state.currentPosition).toEqual([2, 0]);
   expect(state.stepCount).toEqual(8);
 }
 
-function assertStep9(state: SearchState) {
+function assertStep9(state: State) {
   expect(state.citiesFound).toEqual([
     [1, 1],
     [0, 0],
@@ -198,11 +202,12 @@ function assertStep9(state: SearchState) {
   expect(state.graph).toEqual(
     from([0, 1], [1, 1], [2, 1], [0, 0], [0, 2], [2, 0], [2, 2], [3, 1], [3, 0])
   );
-  expect(state.plannedRoute).toEqual([[3, 0]]);
+  expect(state.currentPosition).toEqual([3, 0]);
+  expect(state.plannedRoute).toEqual([]);
   expect(state.stepCount).toEqual(9);
 }
 
-function assertStep10(state: SearchState) {
+function assertStep10(state: State) {
   expect(state.citiesFound).toEqual([
     [1, 1],
     [0, 0],
@@ -218,11 +223,12 @@ function assertStep10(state: SearchState) {
   expect(state.graph).toEqual(
     from([0, 1], [1, 1], [2, 1], [0, 0], [0, 2], [2, 0], [2, 2], [3, 1], [3, 0])
   );
-  expect(state.plannedRoute).toEqual([[3, 1]]);
+  expect(state.currentPosition).toEqual([3, 1]);
+  expect(state.plannedRoute).toEqual([]);
   expect(state.stepCount).toEqual(10);
 }
 
-function assertStep11(state: SearchState) {
+function assertStep11(state: State) {
   expect(state.citiesFound).toEqual([
     [1, 1],
     [0, 0],
@@ -249,11 +255,12 @@ function assertStep11(state: SearchState) {
       [3, 2]
     )
   );
-  expect(state.plannedRoute).toEqual([[3, 2]]);
+  expect(state.currentPosition).toEqual([3, 2]);
+  expect(state.plannedRoute).toEqual([]);
   expect(state.stepCount).toEqual(11);
 }
 
-function assertStep12(state: SearchState) {
+function assertStep12(state: State) {
   expect(state.citiesFound).toEqual([
     [1, 1],
     [0, 0],
@@ -278,11 +285,12 @@ function assertStep12(state: SearchState) {
       [3, 2]
     )
   );
-  expect(state.plannedRoute).toEqual([[2, 2]]);
+  expect(state.currentPosition).toEqual([2, 2]);
+  expect(state.plannedRoute).toEqual([]);
   expect(state.stepCount).toEqual(12);
 }
 
-function assertStep13(state: SearchState) {
+function assertStep13(state: State) {
   expect(state.citiesFound).toEqual([
     [1, 1],
     [0, 0],
@@ -318,6 +326,20 @@ function assertStep13(state: SearchState) {
       [3, 2]
     )
   );
-  expect(state.plannedRoute).toEqual([]);
+  expect(state.currentPosition).toEqual([2, 1]);
+  expect(state.plannedRoute).toEqual([[1, 1]]);
   expect(state.stepCount).toEqual(13);
+}
+
+function assertStep14(state: State) {
+  expect(state.citiesFound).toEqual([
+    [1, 1],
+    [0, 0],
+    [3, 0],
+    [3, 2],
+  ]);
+
+  expect(state.currentPosition).toEqual([1, 1]);
+  expect(state.plannedRoute).toEqual([]);
+  expect(state.stepCount).toEqual(14);
 }

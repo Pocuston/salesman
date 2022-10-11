@@ -1,11 +1,11 @@
-import { equal, Position, squareAround, walkableFrom, X, Y } from "./position";
+import { equal, Position, walkableFrom } from "./position";
 import { add, PositionSet, remove, subtract, toList } from "./position-set";
-import { minBy } from "lodash";
+import { last, minBy } from "lodash";
 import { findRoute, manhattanDistance } from "./aStar";
 
 export type CellType = "WALL" | "ROAD" | "CITY";
 
-export type STATUS = "INIT" | "EXPLORING" | "HOME_ROUTE" | "DONE";
+export type Phase = "EXPLORING" | "GOING_HOME" | "FINISHED";
 
 export type World = Readonly<{
   readonly grid: CellType[][];
@@ -19,7 +19,8 @@ export const initWorld = (grid: CellType[][], hometown: Position): World => {
   };
 };
 
-export type SearchState = Readonly<{
+export type State = Readonly<{
+  phase: Phase;
   stepCount: number;
   currentPosition: Position;
   citiesFound: Position[];
@@ -29,10 +30,11 @@ export type SearchState = Readonly<{
   graph: PositionSet; //graph of the explored accessible area
 }>;
 
-export const initState = (map: World): SearchState => {
+export const initState = (map: World): State => {
   const { hometown } = map;
 
   return {
+    phase: "EXPLORING",
     stepCount: 0,
     currentPosition: hometown,
     citiesFound: [],
@@ -43,8 +45,19 @@ export const initState = (map: World): SearchState => {
   };
 };
 
-export const step = (
+export const step = (state: State, map: World): State => {
+  if (state.phase === "EXPLORING") {
+    return explore(state, map);
+  } else if (state.phase === "GOING_HOME") {
+    return goHome(state);
+  } else {
+    return state;
+  }
+};
+
+export const explore = (
   {
+    phase,
     currentPosition,
     plannedRoute,
     closedListSet,
@@ -52,9 +65,9 @@ export const step = (
     openListSet,
     graph,
     stepCount,
-  }: SearchState,
+  }: State,
   { grid }: World
-): SearchState => {
+): State => {
   //optimisation: if there are more planned moves the route queue
   //we just move to another position and don't bother with the "exploring" part
   if (plannedRoute.length === 0) {
@@ -67,7 +80,7 @@ export const step = (
     //remove current node from open list
     openListSet = remove(openListSet, currentPosition);
 
-    //if city, add to citiesFound
+    //if we are at city, add to citiesFound
     if (
       cellAt(currentPosition, grid) === "CITY" &&
       !citiesFound.some((p) => equal(p, currentPosition))
@@ -87,23 +100,26 @@ export const step = (
     graph = add(graph, ...newPaths);
   }
 
-  //TODO: prioritize, heuristics
-  //TODO: maxBy count of neighbours in closed set
-  //TODO: stubs first (min gaps)
-  plannedRoute = chooseNextRoute(
+  const nextRoute = chooseNextRoute(
     currentPosition,
     openListSet,
     graph,
-    hometown(citiesFound)
+    plannedRoute
   );
+  if (nextRoute !== null) {
+    [currentPosition, ...plannedRoute] = nextRoute;
+  } else {
+    //if there is no more move left, find a route home and switch phase to "GOING_HOME"
+    [currentPosition, ...plannedRoute] = findRoute(
+      currentPosition,
+      hometown(citiesFound),
+      graph
+    );
+    phase = "GOING_HOME";
+  }
 
-  //dequeue from the planned route
-  //it will be the new current position
-  const [nextPosition, ...remainingRoute] = plannedRoute;
-  currentPosition = nextPosition ?? currentPosition;
-  plannedRoute = remainingRoute;
-
-  const newState = {
+  return {
+    phase,
     currentPosition,
     closedListSet,
     openListSet,
@@ -112,10 +128,27 @@ export const step = (
     plannedRoute,
     stepCount: ++stepCount,
   };
+};
 
-  console.log(newState);
-
-  return newState;
+const goHome = (state: State): State => {
+  const { plannedRoute, stepCount } = state;
+  if (plannedRoute.length === 0) {
+    return {
+      ...state,
+    };
+  } else {
+    const [nextPosition, ...remainingRoute] = plannedRoute;
+    const phase = equal(nextPosition, hometown(state.citiesFound))
+      ? "FINISHED"
+      : state.phase;
+    return {
+      ...state,
+      phase,
+      currentPosition: nextPosition,
+      plannedRoute: remainingRoute,
+      stepCount: stepCount + 1,
+    };
+  }
 };
 
 const whereCanGoFrom = (from: Position, grid: CellType[][]): Position[] => {
@@ -146,21 +179,25 @@ const chooseNextRoute = (
   currentPosition: Position,
   openListSet: PositionSet,
   graph: PositionSet,
-  hometown: Position
-): Position[] => {
+  currentRoute: Position[]
+): Position[] | null => {
   const list = toList(openListSet);
   let nextMove = minBy(list, (position) =>
     manhattanDistance(currentPosition, position)
   );
 
-  //if there is no more exploration move, lets go home...
+  //if there is no more move left, we stay at the current position
   if (nextMove === undefined) {
-    return !equal(currentPosition, hometown)
-      ? findRoute(currentPosition, hometown, graph)
-      : [];
+    return null;
   }
 
-  //if the next move is directly walkavle from our position, set a new route there
+  //optimisation: if next move is the same as the current target of the planned route
+  //we can spare finding a new route
+  if (nextMove === last(currentRoute)) {
+    return currentRoute;
+  }
+
+  //if the next move is directly walkable from our position, set a new route there
   if (walkableFrom(currentPosition).some((p) => equal(p, nextMove!))) {
     return [nextMove];
   }
@@ -169,7 +206,9 @@ const chooseNextRoute = (
   return findRoute(currentPosition, nextMove, graph);
 };
 
-export const isFinished = (state: SearchState): boolean =>
-  state.stepCount > 0 && state.plannedRoute.length === 0;
-
 const hometown = (citiesFound: Position[]): Position => citiesFound.at(0)!;
+
+//TODO: implement optimisation
+// const neighbourInClosedList = (currentPosition: Position, closedList: PositionSet): number => {
+//
+// });

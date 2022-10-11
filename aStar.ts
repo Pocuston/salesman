@@ -1,19 +1,20 @@
-import { equal, Position, walkableFrom, X, Y } from "./position";
-import { has, PositionSet, toList } from "./position-set";
-import { minBy } from "lodash";
-// https://www.educative.io/answers/what-is-the-a-star-algorithm
-// https://brilliant.org/wiki/a-star-search/
-// https://briangrinstead.com/blog/astar-search-algorithm-in-javascript/
-// https://www.youtube.com/watch?v=-L-WgKMFuhE
+import {equal, Position, walkableFrom, X, Y} from "./position";
+import {PositionSet, toList} from "./position-set";
+import {minBy} from "lodash";
 
-//2d array with node coordinates as indexes allows fast operations in O(1)
+// 2d array indexed by [x][y] with Nodes as values for fast graph operations in O(1)
 export type Graph = Node[][];
 
 type Node = {
+  // node position in grid
   readonly position: Position;
+  // parent node in path
   parent: Node | null;
+  // distance from start node
   g: number;
+  // estimated distance (heuristic) to end node
   h: number;
+  // g + h
   f: number;
 };
 

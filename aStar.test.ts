@@ -1,6 +1,5 @@
-import { initState, initWorld, step } from "./model";
-import { from } from "./position-set";
-import { findRoute } from "./aStar";
+import {from} from "./position-set";
+import {findRoute} from "./aStar";
 
 // prettier-ignore
 const positions = from(

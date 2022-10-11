@@ -1,12 +1,12 @@
-import { cloneDeep } from "lodash";
-import { Position, X, Y } from "./position";
+import {cloneDeep} from "lodash";
+import {Position} from "./position";
+
+//PositionSet is a 2d array indexed by x,y coordinates
+//is used for fast has & set operations in O(1)
+export type PositionSet = typeof hasPosition[][];
 
 //symbol used to flag a position exists in the set
-export const hasPosition: unique symbol = Symbol("hasPosition");
-
-//PositionSet is 2d array with coordinates as indexes,
-//so we can check fast if position is in set in O(1)
-export type PositionSet = typeof hasPosition[][];
+const hasPosition: unique symbol = Symbol("hasPosition");
 
 export const has = (set: PositionSet, position: Position): boolean => {
   const [x, y] = position;
@@ -55,19 +55,3 @@ function* iterator(set: PositionSet): Generator<Position> {
 export const toList = (set: PositionSet): Position[] => {
   return [...iterator(set)];
 };
-
-// function toList(set: PositionSet): Position[] {
-//   const list: Position[] = [];
-//   for (let x = 0; x < set.length; x++) {
-//     const row = set[x];
-//     if (row) {
-//       for (let y = 0; y < row.length; y++) {
-//         if (row[y] === hasPosition) {
-//           list.push([x, y]);
-//         }
-//       }
-//     }
-//   }
-//
-//   return list;
-// }

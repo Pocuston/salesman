@@ -1,18 +1,29 @@
 import type { NextPage } from "next";
 import map from "../map";
-import { initState, initWorld, isFinished, step } from "../model";
-import { useState } from "react";
+import { initState, initWorld, step } from "../model";
+import { useEffect, useState } from "react";
 import Map from "../components/Map";
+import { salesman, ShortestPath } from "../salesman";
 
-const world = initWorld(map, [29, 19]);
+const world = initWorld(map, [1, 1]);
 
 const Home: NextPage = () => {
   const [searchState, setSearchState] = useState(() => initState(world));
+  const [shortestPath, setShortestPath] = useState<ShortestPath | null>(null);
+  useEffect(() => {
+    if (searchState.phase !== "FINISHED") {
+      setShortestPath(null);
+    } else {
+      const path = salesman(searchState.citiesFound, searchState.graph);
+      console.log({ path });
+      setShortestPath(path);
+    }
+  }, [searchState.phase]);
 
   const handleStepClick = () => {
-    //if (!isFinished(searchState)) {
-    setSearchState((currentState) => step(currentState, world));
-    //}
+    if (searchState.phase !== "FINISHED") {
+      setSearchState((currentState) => step(currentState, world));
+    }
   };
 
   const handleResetClick = () => {
@@ -22,9 +33,15 @@ const Home: NextPage = () => {
   return (
     <div className="container">
       <div className="Controls">
-        {/* TODO play / stop buttons */}
+        {/* TODO play / pause + step forward */}
         <button className="button">Play</button>
-        {true && <button onClick={handleStepClick}>Take a step</button>}
+
+        <button
+          onClick={handleStepClick}
+          disabled={searchState.phase === "FINISHED"}
+        >
+          Take a step
+        </button>
 
         <button className="button button-clear" onClick={handleResetClick}>
           Reset
