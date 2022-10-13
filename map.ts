@@ -1,14 +1,16 @@
 import {CellType} from "./model";
+import {Position} from "./position";
 
 //prettier-ignore
-// const map: CellType[][] = [
+// export const map: CellType[][] = [
 //   ["CITY", "WALL", "ROAD", "CITY"],
 //   ["ROAD", "CITY", "ROAD", "ROAD"],
 //   ["ROAD", "WALL", "ROAD", "CITY"],
 // ];
+// export const hometown: Position = [10, 10];
 
 //prettier-ignore
-const map: CellType[][] = [
+export const map: CellType[][] = [
   ["ROAD", "ROAD", "ROAD", "ROAD","ROAD", "WALL", "ROAD", "ROAD", "ROAD", "ROAD","ROAD", "WALL", "ROAD", "ROAD","ROAD", "ROAD", "WALL", "ROAD", "ROAD", "ROAD","ROAD", "WALL", "ROAD", "ROAD","ROAD", "ROAD", "ROAD", "ROAD", "ROAD", "ROAD"],
   ["ROAD", "CITY", "ROAD", "ROAD","ROAD", "WALL", "ROAD", "ROAD", "ROAD", "ROAD","ROAD", "WALL", "ROAD", "ROAD","CITY", "ROAD", "WALL", "ROAD", "ROAD", "ROAD","ROAD", "WALL", "ROAD", "ROAD","ROAD", "ROAD", "ROAD", "ROAD", "ROAD", "ROAD"],
   ["ROAD", "ROAD", "ROAD", "ROAD","ROAD", "WALL", "ROAD", "ROAD", "ROAD", "ROAD","ROAD", "WALL", "ROAD", "ROAD","ROAD", "ROAD", "WALL", "ROAD", "ROAD", "ROAD","ROAD", "WALL", "ROAD", "ROAD","ROAD", "ROAD", "ROAD", "ROAD", "ROAD", "ROAD"],
@@ -31,4 +33,4 @@ const map: CellType[][] = [
   ["ROAD", "ROAD", "ROAD", "ROAD","ROAD", "ROAD", "ROAD", "ROAD", "ROAD", "ROAD","ROAD", "ROAD", "ROAD", "ROAD","ROAD", "ROAD", "ROAD", "ROAD", "ROAD", "ROAD","ROAD", "WALL", "ROAD", "ROAD","ROAD", "ROAD", "ROAD", "ROAD", "ROAD", "CITY"],
 ];
 
-export default map;
+export const hometown: Position = [10, 10];

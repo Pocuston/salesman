@@ -1,5 +1,12 @@
 import { equal, Position, walkableFrom } from "./position";
-import { add, PositionSet, remove, subtract, toList } from "./position-set";
+import {
+  add,
+  has,
+  PositionSet,
+  remove,
+  subtract,
+  toList,
+} from "./position-set";
 import { last, minBy } from "lodash";
 import { findRoute, manhattanDistance } from "./aStar";
 
@@ -152,8 +159,6 @@ const goHome = (state: State): State => {
 };
 
 const whereCanGoFrom = (from: Position, grid: CellType[][]): Position[] => {
-  //TODO...
-  //return squareAround(from).filter((move) => canMoveTo(cellAt(move, grid)));
   return walkableFrom(from).filter((move) => canMoveTo(cellAt(move, grid)));
 };
 
@@ -208,7 +213,13 @@ const chooseNextRoute = (
 
 const hometown = (citiesFound: Position[]): Position => citiesFound.at(0)!;
 
-//TODO: implement optimisation
-// const neighbourInClosedList = (currentPosition: Position, closedList: PositionSet): number => {
-//
-// });
+export const cityName = (
+  position: Position,
+  citiesFound: Position[]
+): string => {
+  const index = citiesFound.findIndex((p) => equal(p, position));
+  return index === -1 ? "" : String.fromCharCode(65 + index);
+};
+
+export const visited = (position: Position, state: State): boolean =>
+  state.closedListSet && has(state.closedListSet, position);

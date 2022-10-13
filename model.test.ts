@@ -193,7 +193,6 @@ function assertStep9(state: State) {
   expect(state.closedListSet).toEqual(
     from([1, 1], [0, 1], [0, 0], [0, 2], [2, 1], [2, 0])
   );
-  //console.log(toList(state.openListSet));
   expect(toList(state.openListSet)).toEqual([
     [2, 2],
     [3, 0],

@@ -1,7 +1,6 @@
-import { CellType, State, World } from "../model";
-import { Sprite, Stage } from "@inlet/react-pixi";
-import { has } from "../position-set";
-import { X, Y } from "../position";
+import { CellType, cityName, State, visited, World } from "../model";
+import { Sprite, Stage, Text } from "@inlet/react-pixi";
+import { Position, X, Y } from "../position";
 
 type MapProps = {
   state: State;
@@ -9,16 +8,6 @@ type MapProps = {
 };
 
 const fieldSize = 32;
-
-type RenderableCellTypes = Exclude<CellType, "ROAD">;
-const textures: { [key in RenderableCellTypes]: string } = {
-  WALL: "./resources/wall.png",
-  CITY: "./resources/city.png",
-};
-
-const renderable = (cell: CellType): cell is RenderableCellTypes => {
-  return cell !== "ROAD";
-};
 
 const Map = ({ state, world }: MapProps) => {
   return (
@@ -38,28 +27,16 @@ const Map = ({ state, world }: MapProps) => {
 export default Map;
 
 const World = ({ world, state }: { world: World; state: State }) => {
-  const walls: JSX.Element[] = [];
+  const cells: JSX.Element[] = [];
   world.grid.forEach((row, y) => {
-    row.forEach((field, x) => {
-      // TODO: render city number
-      // TODO: render city only if explored
-      if (renderable(field)) {
-        walls.push(
-          <Sprite image={textures[field]} x={x * fieldSize} y={y * fieldSize} />
-        );
-      } else if (state.closedListSet && has(state.closedListSet, [x, y])) {
-        walls.push(
-          <Sprite
-            image={"./resources/visited.png"}
-            x={x * fieldSize}
-            y={y * fieldSize}
-          />
-        );
-      }
+    row.forEach((cell, x) => {
+      cells.push(
+        <Cell cell={cell} state={state} position={[x, y]} key={`[${x},${y}]`} />
+      );
     });
   });
 
-  return <>{walls}</>;
+  return <>{cells}</>;
 };
 
 const Salesman = ({ state }: { state: State }) => {
@@ -70,4 +47,44 @@ const Salesman = ({ state }: { state: State }) => {
       y={state.currentPosition[Y] * fieldSize}
     />
   );
+};
+
+const Cell = ({
+  cell,
+  position,
+  state,
+}: {
+  cell: CellType;
+  position: Position;
+  state: State;
+}): JSX.Element => {
+  const x = position[X] * fieldSize;
+  const y = position[Y] * fieldSize;
+  switch (cell) {
+    case "ROAD":
+      return visited(position, state) ? (
+        <Sprite image={"./resources/visited.png"} x={x} y={y} />
+      ) : (
+        <></>
+      );
+    case "CITY":
+      return visited(position, state) ? (
+        <>
+          <Sprite image={"./resources/city.png"} x={x} y={y} />
+          <Text
+            text={cityName(position, state.citiesFound)}
+            x={x}
+            y={y}
+            anchor={-0.1}
+          />
+        </>
+      ) : (
+        <></>
+      );
+    case "WALL": {
+      return <Sprite image={"./resources/wall.png"} x={x} y={y} />;
+    }
+  }
+
+  return <></>;
 };
