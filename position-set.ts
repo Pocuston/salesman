@@ -1,4 +1,3 @@
-import {cloneDeep} from "lodash";
 import {Position} from "./position";
 
 /** PositionMap uses position tuple as key for fast {@link has} operations in O(1) **/
@@ -19,13 +18,12 @@ export const has = (
 };
 
 export function add(set: PositionSet, ...positions: Position[]): PositionSet {
-  const newSet = cloneDeep(set);
   positions.forEach(([x, y]) => {
-    if (!newSet[x]) newSet[x] = [];
-    newSet[x][y] = hasPosition;
+    if (!set[x]) set[x] = [];
+    set[x][y] = hasPosition;
   });
 
-  return newSet;
+  return set;
 }
 
 export function set<Value>(
@@ -33,12 +31,11 @@ export function set<Value>(
   position: Position,
   value: Value
 ): PositionMap<Value> {
-  const newSet = cloneDeep<PositionMap<Value>>(map);
   const [x, y] = position;
-  if (!newSet[x]) newSet[x] = [];
-  newSet[x][y] = value;
+  if (!map[x]) map[x] = [];
+  map[x][y] = value;
 
-  return newSet;
+  return map;
 }
 
 export const remove = <Value>(
@@ -46,9 +43,8 @@ export const remove = <Value>(
   position: Position
 ): PositionMap<Value> => {
   const [x, y] = position;
-  const newSet = cloneDeep(set);
-  if (newSet[x]) delete newSet[x][y];
-  return newSet;
+  if (set[x]) delete set[x][y];
+  return set;
 };
 
 export const subtract = (list: Position[], set: PositionSet): Position[] => {
