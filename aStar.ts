@@ -1,9 +1,14 @@
-import {equal, Position, walkableFrom, X, Y} from "./position";
-import {PositionSet, toList} from "./position-set";
-import {minBy} from "lodash";
-
-// 2d array indexed by [x][y] with Nodes as values for fast graph operations in O(1)
-export type Graph = Node[][];
+import { equal, Position, walkableFrom, X, Y } from "./position";
+import {
+  has,
+  PositionMap,
+  PositionSet,
+  remove,
+  set,
+  toList,
+  values,
+} from "./position-set";
+import { minBy } from "lodash";
 
 type Node = {
   // node position in grid
@@ -17,6 +22,8 @@ type Node = {
   // g + h
   f: number;
 };
+
+type Graph = PositionMap<Node>;
 
 const init = (positionSet: PositionSet): Graph => {
   const positions = toList(positionSet);
@@ -42,8 +49,8 @@ export const findRoute = (
   to: Position,
   positionSet: PositionSet
 ): Position[] => {
-  let openList: Node[] = []; //TODO use PositionSet
-  let closedList: Node[] = []; //TODO use PositionSet
+  let openList: PositionMap<Node> = [];
+  let closedList: PositionMap<Node> = [];
 
   const graph = init(positionSet);
   const startNode = graph[from[X]][from[Y]];
@@ -53,28 +60,28 @@ export const findRoute = (
 
   const endNode = graph[to[X]][to[Y]];
 
-  openList.push(startNode);
+  openList = set(openList, startNode.position, startNode);
 
   while (openList.length > 0) {
-    let currentNode = minBy(openList, (node) => node.f)!;
+    // we choose the node in openList having the lowest f value
+    let currentNode = minBy([...values(openList)], (node) => node.f)!;
+
+    // if we reached the end node, we're done here and can construct the shortest path
     if (equal(currentNode.position, endNode.position)) {
       return constructPath(currentNode);
     }
 
-    openList = openList.filter(
-      (node) => !equal(node.position, currentNode.position)
-    );
-    closedList.push(currentNode);
+    openList = remove(openList, currentNode.position);
+    closedList = set(closedList, currentNode.position, currentNode);
 
     const neighbours = neighboursOf(currentNode, graph);
     for (const neighbour of neighbours) {
-      //TODO use set for closedList
-      if (closedList.some((node) => equal(node.position, neighbour.position))) {
+      if (has(closedList, neighbour.position)) {
         continue;
       }
 
-      if (!openList.some((node) => equal(node.position, neighbour.position))) {
-        openList.push(neighbour);
+      if (!has(openList, neighbour.position)) {
+        openList = set(openList, neighbour.position, neighbour);
       }
 
       let g = currentNode.g + 1;

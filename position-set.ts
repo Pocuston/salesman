@@ -1,16 +1,21 @@
 import {cloneDeep} from "lodash";
 import {Position} from "./position";
 
-//PositionSet is a 2d array indexed by x,y coordinates
-//is used for fast has & set operations in O(1)
-export type PositionSet = typeof hasPosition[][];
+/** PositionMap uses position tuple as key for fast {@link has} operations in O(1) **/
+export type PositionMap<Value> = Value[][];
 
-//symbol used to flag a position exists in the set
+/** PositionSet uses position tuple as key for fast {@link has} operations in O(1) **/
+export type PositionSet = PositionMap<typeof hasPosition>;
+
+//symbol is used to flag that a position exists in the set
 const hasPosition: unique symbol = Symbol("hasPosition");
 
-export const has = (set: PositionSet, position: Position): boolean => {
+export const has = (
+  set: PositionSet | PositionMap<any>,
+  position: Position
+): boolean => {
   const [x, y] = position;
-  return set[x]?.[y] === hasPosition;
+  return set[x]?.[y] !== undefined;
 };
 
 export function add(set: PositionSet, ...positions: Position[]): PositionSet {
@@ -23,7 +28,23 @@ export function add(set: PositionSet, ...positions: Position[]): PositionSet {
   return newSet;
 }
 
-export const remove = (set: PositionSet, position: Position): PositionSet => {
+export function set<Value>(
+  map: PositionMap<Value>,
+  position: Position,
+  value: Value
+): PositionMap<Value> {
+  const newSet = cloneDeep<PositionMap<Value>>(map);
+  const [x, y] = position;
+  if (!newSet[x]) newSet[x] = [];
+  newSet[x][y] = value;
+
+  return newSet;
+}
+
+export const remove = <Value>(
+  set: PositionMap<Value>,
+  position: Position
+): PositionMap<Value> => {
   const [x, y] = position;
   const newSet = cloneDeep(set);
   if (newSet[x]) delete newSet[x][y];
@@ -44,7 +65,7 @@ function* iterator(set: PositionSet): Generator<Position> {
     const row = set[x];
     if (row) {
       for (let y = 0; y < row.length; y++) {
-        if (row[y] === hasPosition) {
+        if (row[y] !== undefined) {
           yield [x, y];
         }
       }
@@ -55,3 +76,16 @@ function* iterator(set: PositionSet): Generator<Position> {
 export const toList = (set: PositionSet): Position[] => {
   return [...iterator(set)];
 };
+
+export function* values<Value>(map: PositionMap<Value>): Generator<Value> {
+  for (let x = 0; x < map.length; x++) {
+    const row = map[x];
+    if (row) {
+      for (let y = 0; y < row.length; y++) {
+        if (row[y] !== undefined) {
+          yield map[x][y];
+        }
+      }
+    }
+  }
+}
