@@ -40,7 +40,7 @@ export type State = Readonly<{
 export const initState = (map: World): State => {
   const { hometown } = map;
 
-  return {
+  const initialState: State = {
     phase: "EXPLORING",
     stepCount: 0,
     currentPosition: hometown,
@@ -50,6 +50,9 @@ export const initState = (map: World): State => {
     closedListSet: [],
     graph: [],
   };
+
+  //add hometown to graph
+  return step(initialState, map);
 };
 
 export const step = (state: State, map: World): State => {
@@ -75,7 +78,13 @@ export const explore = (
   }: State,
   { grid }: World
 ): State => {
-  //optimisation: if there are more planned moves the route queue
+  //move current position to next move in the previously planned route
+  //it is not available for the first step
+  if (plannedRoute.length > 0) {
+    [currentPosition, ...plannedRoute] = plannedRoute;
+  }
+
+  //optimisation: if there are remaining more moves in the queue,
   //we just move to another position and don't bother with the "exploring" part
   if (plannedRoute.length === 0) {
     //add current node to close list
@@ -114,14 +123,10 @@ export const explore = (
     plannedRoute
   );
   if (nextRoute !== null) {
-    [currentPosition, ...plannedRoute] = nextRoute;
+    plannedRoute = nextRoute;
   } else {
     //if there is no more move left, find a route home and switch phase to "GOING_HOME"
-    [currentPosition, ...plannedRoute] = findRoute(
-      currentPosition,
-      hometown(citiesFound),
-      graph
-    );
+    plannedRoute = findRoute(currentPosition, hometown(citiesFound), graph);
     phase = "GOING_HOME";
   }
 
