@@ -34,3 +34,18 @@ export const map: CellType[][] = [
 ];
 
 export const hometown: Position = [10, 10];
+
+export const randomHometown = (): Position => {
+  const cities: Position[] = [];
+
+  for (let i = 0; i < map.length; i++) {
+    const row = map[i];
+    for (let j = 0; j < row.length; j++) {
+      if (row[j] === "CITY") {
+        cities.push([j, i]);
+      }
+    }
+  }
+
+  return cities[Math.floor(Math.random() * cities.length)];
+};
