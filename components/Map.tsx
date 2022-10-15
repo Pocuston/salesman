@@ -1,6 +1,7 @@
 import { CellType, cityName, State, visited, World } from "../model";
 import { Sprite, Stage, Text } from "@inlet/react-pixi";
-import { Position, X, Y } from "../position";
+import { Position, visibleFrom, X, Y } from "../position";
+import { has } from "../position-set";
 
 type MapProps = {
   state: State;
@@ -82,9 +83,18 @@ const Cell = ({
         <></>
       );
     case "WALL": {
-      return <Sprite image={"./resources/wall.png"} x={x} y={y} />;
+      // TODO: rendering could be optimised to keep visible walls in state
+      return isWallVisible(position, state) ? (
+        <Sprite image={"./resources/wall.png"} x={x} y={y} />
+      ) : (
+        <></>
+      );
     }
   }
 
   return <></>;
+};
+
+const isWallVisible = (position: Position, state: State) => {
+  return visibleFrom(position).some((p) => has(state.closedListSet, p));
 };

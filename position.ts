@@ -22,5 +22,19 @@ export const walkableFrom = (from: Position): Position[] =>
     from[Y] + offset[Y],
   ]);
 
+const VISIBLE_AREA_OFFSETS = [
+  ...WALKABLE_AREA_OFFSETS,
+  offset(-1, -1),
+  offset(1, -1),
+  offset(-1, 1),
+  offset(1, 1),
+];
+
+export const visibleFrom = (from: Position): Position[] =>
+  VISIBLE_AREA_OFFSETS.map((offset) => [
+    from[X] + offset[X],
+    from[Y] + offset[Y],
+  ]);
+
 export const equal = (a: Position, b: Position): boolean =>
   a[X] === b[X] && a[Y] === b[Y];
