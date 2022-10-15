@@ -58,16 +58,14 @@ const Cell = ({
   cell: CellType;
   position: Position;
   state: State;
-}): JSX.Element => {
+}): JSX.Element | null => {
   const x = position[X] * fieldSize;
   const y = position[Y] * fieldSize;
   switch (cell) {
     case "ROAD":
       return visited(position, state) ? (
         <Sprite image={"./resources/visited.png"} x={x} y={y} />
-      ) : (
-        <></>
-      );
+      ) : null;
     case "CITY":
       return visited(position, state) ? (
         <>
@@ -79,20 +77,16 @@ const Cell = ({
             anchor={-0.1}
           />
         </>
-      ) : (
-        <></>
-      );
+      ) : null;
     case "WALL": {
       // TODO: rendering could be optimised to keep visible walls in state
       return isWallVisible(position, state) ? (
         <Sprite image={"./resources/wall.png"} x={x} y={y} />
-      ) : (
-        <></>
-      );
+      ) : null;
     }
   }
 
-  return <></>;
+  return null;
 };
 
 const isWallVisible = (position: Position, state: State) => {
