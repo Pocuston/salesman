@@ -120,7 +120,8 @@ export const explore = (
     currentPosition,
     openListSet,
     graph,
-    plannedRoute
+    plannedRoute,
+    hometown(citiesFound)
   );
   if (nextRoute !== null) {
     plannedRoute = nextRoute;
@@ -189,11 +190,15 @@ const chooseNextRoute = (
   currentPosition: Position,
   openListSet: PositionSet,
   graph: PositionSet,
-  currentRoute: Position[]
+  currentRoute: Position[],
+  hometown: Position
 ): Position[] | null => {
   const list = toList(openListSet);
-  let nextMove = minBy(list, (position) =>
-    manhattanDistance(currentPosition, position)
+  let nextMove = minBy(
+    list,
+    (position) =>
+      manhattanDistance(currentPosition, position) * 1000 +
+      manhattanDistance(position, hometown)
   );
 
   //if there is no more move left, we stay at the current position

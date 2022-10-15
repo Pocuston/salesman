@@ -20,7 +20,7 @@ const Home: NextPage = () => {
       const path = salesman(searchState.citiesFound, searchState.graph);
       setShortestPath(path);
     }
-  }, [searchState.phase]);
+  }, [searchState.phase, searchState.citiesFound, searchState.graph]);
 
   useEffect(() => {
     if (play && searchState.phase !== "FINISHED") {
@@ -29,7 +29,7 @@ const Home: NextPage = () => {
       }, speed);
       return () => clearInterval(interval);
     }
-  }, [play]);
+  }, [play, searchState.phase]);
 
   const handleStepClick = () => {
     if (searchState.phase !== "FINISHED") {
@@ -75,6 +75,12 @@ const Home: NextPage = () => {
         >
           Reset
         </button>
+
+        <div>
+          <b>Step #</b>
+          <div>{searchState.stepCount}</div>
+        </div>
+
         <div>
           <b>Cities found:</b>
           <div>
@@ -83,21 +89,31 @@ const Home: NextPage = () => {
               .join(",")}
           </div>
         </div>
-        {shortestPath && (
-          <div className="shortestPath">
-            <b>Shortest path for the next time:</b>
-            <div>
-              {shortestPath
-                .map((city) =>
-                  cityName(
-                    searchState.citiesFound[city],
-                    searchState.citiesFound
-                  )
-                )
-                .join("-")}
-            </div>
+
+        <div className="shortestPath">
+          <b>Shortest path for the next time:</b>
+          {searchState.phase === "FINISHED" && shortestPath === null && (
+            <div>Calculating shortest path...</div>
+          )}
+          {searchState.phase !== "FINISHED" && <div>Not known yet...</div>}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              flexWrap: "wrap",
+            }}
+          >
+            {shortestPath?.map((city, i) => (
+              <div key={i}>
+                {cityName(
+                  searchState.citiesFound[city],
+                  searchState.citiesFound
+                )}
+                {i < searchState.citiesFound.length && <span> &#x2192; </span>}
+              </div>
+            ))}
           </div>
-        )}
+        </div>
       </div>
       <div className="Map">
         <Map state={searchState} world={world} />
@@ -141,6 +157,10 @@ const Home: NextPage = () => {
 
         .shortestPath {
           margin-top: 8px;
+        }
+
+        .shortestPath > div > div {
+          margin-right: 8px;
         }
       `}</style>
     </div>
