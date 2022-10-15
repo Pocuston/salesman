@@ -1,13 +1,14 @@
 import type { NextPage } from "next";
-import { hometown, map } from "../map";
+import { map, randomHometown } from "../map";
 import { cityName, initState, initWorld, step } from "../model";
 import { useEffect, useState } from "react";
 import Map from "../components/Map";
 import { salesman, ShortestPath } from "../salesman";
 
-const world = initWorld(map, hometown);
+const speed = 50;
 
 const Home: NextPage = () => {
+  const [world, setWorld] = useState(initWorld(map, randomHometown()));
   const [searchState, setSearchState] = useState(() => initState(world));
   const [play, setPlay] = useState(false);
   const [shortestPath, setShortestPath] = useState<ShortestPath | null>(null);
@@ -25,7 +26,7 @@ const Home: NextPage = () => {
     if (play && searchState.phase !== "FINISHED") {
       const interval = setInterval(() => {
         setSearchState((state) => step(state, world));
-      }, 50);
+      }, speed);
       return () => clearInterval(interval);
     }
   }, [play]);
@@ -37,7 +38,10 @@ const Home: NextPage = () => {
   };
 
   const handleResetClick = () => {
+    const world = initWorld(map, randomHometown());
+    setWorld(world);
     setSearchState(initState(world));
+    setShortestPath(null);
     setPlay(false);
   };
 
@@ -81,7 +85,7 @@ const Home: NextPage = () => {
         </div>
         {shortestPath && (
           <div className="shortestPath">
-            <b>Shortest path from hometown:</b>
+            <b>Shortest path for the next time:</b>
             <div>
               {shortestPath
                 .map((city) =>
