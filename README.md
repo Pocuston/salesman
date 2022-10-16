@@ -22,13 +22,18 @@ Salesman will appear in random city at the start.
 2. When the exploration step is completed, find the shortest path back to the very first city where the salesman appeared.
 3. When the salesman is back, the ultimate goal is to evaluate all costs (distance) permutations and pick the cheapest one so the salesman can save as much time as possible during his next trip, while visiting all cities again. EACH CITY CAN BE VISITED EXACTLY ONCE.
 
-## Implementation details
+## Implementation
 - Exploration algorithm is a combination of [depth-first graph search](https://en.wikipedia.org/wiki/Depth-first_search) (with some heuristics) and [A* path finding algorithm](https://cs.wikipedia.org/wiki/A*).
 - Finding the shortest path back to the hometown is done by using the A* algorithm as well.
 - Finding the cheapest path permutation is done by using the [brute force approach to the salesman problem](https://www.geeksforgeeks.org/travelling-salesman-problem-set-1/). 
-  - Therefore, there is a limitation to about **10** cities, otherwise the algorithm will take too long to finish.
+  - Therefore, there is a limitation to about **11** cities, otherwise the algorithm will take too long to finish.
   - Even on 10 cities, there is a noticeable lag after the salesman returns to the hometown and the algorithm starts to find the cheapest path permutation.
-- Map rendering via react-pixi.
+- Map rendering via [react-pixi](https://reactpixi.org/).
+- Jest snapshot tests are used to verify every algorithm step and avoid regression.
+
+## Performance
+- Every algorithm step on the map of size 30x20 usually takes about < 1 ms with rare peaks around 3ms on MacBook Pro M1.
+- Solving one particular 30x20 map configuration with 11 cities is solved in 757 steps and finishes in 617 ms on MacBook Pro M1. 
 
 ## Getting Started
 
