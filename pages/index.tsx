@@ -5,42 +5,42 @@ import { useEffect, useState } from "react";
 import Map from "../components/Map";
 import { salesman, ShortestPath } from "../salesman";
 
-const speed = 0;
+const speed = 40;
 
 const Home: NextPage = () => {
   const [world, setWorld] = useState(initWorld(map, randomHometown()));
-  const [searchState, setSearchState] = useState(() => initState(world));
+  const [state, setState] = useState(() => initState(world));
   const [play, setPlay] = useState(false);
   const [shortestPath, setShortestPath] = useState<ShortestPath | null>(null);
 
   useEffect(() => {
-    if (searchState.phase !== "FINISHED") {
+    if (state.phase !== "FINISHED") {
       setShortestPath(null);
     } else {
-      const path = salesman(searchState.citiesFound, searchState.graph);
+      const path = salesman(state.citiesFound, state.graph);
       setShortestPath(path);
     }
-  }, [searchState.phase, searchState.citiesFound, searchState.graph]);
+  }, [state.phase, state.citiesFound, state.graph]);
 
   useEffect(() => {
-    if (play && searchState.phase !== "FINISHED") {
+    if (play && state.phase !== "FINISHED") {
       const interval = setInterval(() => {
-        setSearchState((state) => step(state, world));
+        setState((state) => step(state, world));
       }, speed);
       return () => clearInterval(interval);
     }
-  }, [play, searchState.phase]);
+  }, [play, state.phase]);
 
   const handleStepClick = () => {
-    if (searchState.phase !== "FINISHED") {
-      setSearchState((currentState) => step(currentState, world));
+    if (state.phase !== "FINISHED") {
+      setState((currentState) => step(currentState, world));
     }
   };
 
   const handleResetClick = () => {
     const world = initWorld(map, randomHometown());
     setWorld(world);
-    setSearchState(initState(world));
+    setState(initState(world));
     setShortestPath(null);
     setPlay(false);
   };
@@ -56,56 +56,51 @@ const Home: NextPage = () => {
           <button
             className="button"
             onClick={handlePlayClick}
-            disabled={searchState.phase === "FINISHED"}
+            disabled={state.phase === "FINISHED"}
           >
             {play ? "Stop" : "Play"}
           </button>
 
           <button
             onClick={handleStepClick}
-            disabled={searchState.phase === "FINISHED"}
+            disabled={state.phase === "FINISHED"}
           >
             Step
           </button>
         </div>
 
         <button
-          className={searchState.phase !== "FINISHED" ? "button-clear" : ""}
+          className={state.phase !== "FINISHED" ? "button-clear" : ""}
           onClick={handleResetClick}
         >
           Reset
         </button>
 
         <div>
-          <b>Step #{searchState.stepCount}</b>
+          <b>Step #{state.stepCount}</b>
         </div>
 
         <div className="cities">
           <b>Cities found:</b>
           <div className="cities-found">
-            {searchState.citiesFound
-              .map((city) => cityName(city, searchState.citiesFound))
+            {state.citiesFound
+              .map((city) => cityName(city, state.citiesFound))
               .join(",")}
           </div>
         </div>
 
         <div className="shortestPath">
           <b>Shortest path for the next time:</b>
-          {searchState.phase === "FINISHED" && shortestPath === null && (
+          {state.phase === "FINISHED" && shortestPath === null && (
             <div>Calculating shortest path...</div>
           )}
-          {searchState.phase !== "FINISHED" && <div>Not known yet...</div>}
+          {state.phase !== "FINISHED" && <div>Not known yet...</div>}
           {shortestPath !== null && (
             <div className="results">
               {shortestPath?.map((city, i) => (
                 <div key={i}>
-                  {cityName(
-                    searchState.citiesFound[city],
-                    searchState.citiesFound
-                  )}
-                  {i < searchState.citiesFound.length && (
-                    <span> &#x2192; </span>
-                  )}
+                  {cityName(state.citiesFound[city], state.citiesFound)}
+                  {i < state.citiesFound.length && <span> &#x2192; </span>}
                 </div>
               ))}
             </div>
@@ -113,7 +108,7 @@ const Home: NextPage = () => {
         </div>
       </div>
       <div className="Map">
-        <Map state={searchState} world={world} />
+        <Map state={state} world={world} />
       </div>
       <style jsx>{`
         .container {

@@ -1,12 +1,8 @@
 import { CellType, cityName, State, visited, World } from "../model";
 import { Sprite, Stage, Text } from "@inlet/react-pixi";
-import { Position, visibleFrom, X, Y } from "../position";
+import { equal, Position, visibleFrom, X, Y } from "../position";
 import { has } from "../position-set";
 import colors from "../colors";
-
-// TODO render path to home
-// TODO render panel left
-// TODO better render of city names
 
 type MapProps = {
   state: State;
@@ -77,10 +73,15 @@ const Cell = ({
   const y = position[Y] * fieldSize;
   switch (cell) {
     case "ROAD":
-      return visited(position, state) ? (
-        <Sprite image={"./resources/visited.png"} x={x} y={y} />
-      ) : null;
+      if (onRouteHome(position, state)) {
+        return <Sprite image={"./resources/home-route.png"} x={x} y={y} />;
+      } else if (visited(position, state)) {
+        return <Sprite image={"./resources/visited.png"} x={x} y={y} />;
+      } else {
+        return null;
+      }
     case "CITY":
+      // TODO: optimise resolving city name
       return visited(position, state) ? (
         <>
           <Sprite image={"./resources/city.png"} x={x} y={y} />
@@ -105,4 +106,11 @@ const Cell = ({
 
 const isWallVisible = (position: Position, state: State) => {
   return visibleFrom(position).some((p) => has(state.closedListSet, p));
+};
+
+const onRouteHome = (position: Position, state: State) => {
+  return (
+    state.phase === "GOING_HOME" &&
+    state.plannedRoute.some((p) => equal(p, position))
+  );
 };

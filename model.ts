@@ -27,13 +27,13 @@ export const initWorld = (grid: CellType[][], hometown: Position): World => {
 };
 
 export type State = Readonly<{
-  phase: Phase;
-  stepCount: number;
-  currentPosition: Position;
-  citiesFound: Position[];
-  plannedRoute: Position[];
-  openListSet: PositionSet; //to be able to check if position is in open list in O(1)
-  closedListSet: PositionSet; //to be able to check if position is in closed list in O(1)
+  phase: Phase; // current phase
+  stepCount: number; // number of steps taken
+  currentPosition: Position; // current position
+  citiesFound: Position[]; // list of cities found so far
+  plannedRoute: Position[]; // route planned to next positions
+  openListSet: PositionSet; // PositionSet used for fast operations in O(1)
+  closedListSet: PositionSet; // PositionSet used for fast operations in O(1)
   graph: PositionSet; //graph of the explored accessible area
 }>;
 
@@ -65,7 +65,7 @@ export const step = (state: State, map: World): State => {
   }
 };
 
-export const explore = (
+const explore = (
   {
     phase,
     currentPosition,
