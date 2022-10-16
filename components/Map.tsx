@@ -89,7 +89,7 @@ const Cell = ({
             text={cityName(position, state.citiesFound)}
             x={x + 7}
             y={y + 1}
-            isSprite={true}
+            isSprite={false}
           />
         </>
       ) : null;
