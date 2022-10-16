@@ -25,6 +25,7 @@ const Map = ({ state, world }: MapProps) => {
       <style jsx>{`
         .map {
           border-radius: 4px;
+          width: ${world.grid[0].length * fieldSize + 8}px;
           height: ${world.grid.length * fieldSize + 8}px;
           padding: 4px;
           background-color: #707070;
