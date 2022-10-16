@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Map from "../components/Map";
 import { salesman, ShortestPath } from "../salesman";
 
-const speed = 40;
+const speed = 50;
 
 const Home: NextPage = () => {
   const [world, setWorld] = useState(initWorld(map, randomHometown()));
