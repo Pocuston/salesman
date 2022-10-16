@@ -42,7 +42,7 @@ export const initState = (map: World): State => {
 
   const initialState: State = {
     phase: "EXPLORING",
-    stepCount: 0,
+    stepCount: -1,
     currentPosition: hometown,
     citiesFound: [],
     plannedRoute: [],
@@ -51,7 +51,7 @@ export const initState = (map: World): State => {
     graph: [],
   };
 
-  //add hometown to graph
+  //initial step to "explore" the homewtown, so step #1 goes outside the city
   return step(initialState, map);
 };
 
@@ -84,7 +84,7 @@ export const explore = (
     [currentPosition, ...plannedRoute] = plannedRoute;
   }
 
-  //optimisation: if there are remaining more moves in the queue,
+  //if there are more remaining more moves in the queue,
   //we just move to another position and don't bother with the "exploring" part
   if (plannedRoute.length === 0) {
     //add current node to close list
@@ -116,6 +116,10 @@ export const explore = (
     graph = add(graph, ...newPaths);
   }
 
+  //choose next route to go:
+  //- closes neighbour in open list if possible
+  //- if not, then A* route to closest cell in open list
+  //- or if there are no more open cells, then A* route to the hometown
   const nextRoute = chooseNextRoute(
     currentPosition,
     openListSet,
@@ -193,15 +197,17 @@ const chooseNextRoute = (
   currentRoute: Position[],
   hometown: Position
 ): Position[] | null => {
-  const list = toList(openListSet);
+  const openList = toList(openListSet);
+
+  //we choose the closest cell in open openList and in case of same distance, the closes to the hometown
   let nextMove = minBy(
-    list,
-    (position) =>
-      manhattanDistance(currentPosition, position) * 1000 +
-      manhattanDistance(position, hometown)
+    openList,
+    (openListPosition) =>
+      manhattanDistance(currentPosition, openListPosition) * 1000 +
+      manhattanDistance(openListPosition, hometown)
   );
 
-  //if there is no more move left, we stay at the current position
+  //if there is no more move left, return null
   if (nextMove === undefined) {
     return null;
   }

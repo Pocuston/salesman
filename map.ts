@@ -1,13 +1,13 @@
 import { CellType } from "./model";
 import { Position } from "./position";
 
+//small map for debugging
 //prettier-ignore
 // export const map: CellType[][] = [
 //   ["CITY", "WALL", "ROAD", "CITY"],
 //   ["ROAD", "CITY", "ROAD", "ROAD"],
 //   ["ROAD", "WALL", "ROAD", "CITY"],
 // ];
-// export const hometown: Position = [10, 10];
 
 //prettier-ignore
 export const map: CellType[][] = [
@@ -32,8 +32,6 @@ export const map: CellType[][] = [
   ["ROAD", "ROAD", "WALL", "WALL","WALL", "ROAD", "WALL", "ROAD", "ROAD", "ROAD","ROAD", "ROAD", "ROAD", "ROAD","ROAD", "ROAD", "ROAD", "WALL", "ROAD", "ROAD","ROAD", "WALL", "ROAD", "ROAD","ROAD", "ROAD", "ROAD", "ROAD", "ROAD", "ROAD"],
   ["ROAD", "ROAD", "ROAD", "ROAD","ROAD", "ROAD", "WALL", "ROAD", "ROAD", "ROAD","ROAD", "ROAD", "ROAD", "ROAD","ROAD", "ROAD", "ROAD", "ROAD", "ROAD", "ROAD","ROAD", "WALL", "ROAD", "ROAD","ROAD", "ROAD", "ROAD", "ROAD", "ROAD", "CITY"],
 ];
-
-export const hometown: Position = [10, 10];
 
 export const randomHometown = (): Position => {
   const cities: Position[] = [];
