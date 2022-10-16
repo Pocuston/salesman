@@ -51,7 +51,7 @@ export const initState = (map: World): State => {
     graph: [],
   };
 
-  //initial step to "explore" the homewtown, so step #1 goes outside the city
+  //initial step takes place in the hometown, so step #1 goes outside the city as expected
   return step(initialState, map);
 };
 
