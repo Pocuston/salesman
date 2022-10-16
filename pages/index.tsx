@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Map from "../components/Map";
 import { salesman, ShortestPath } from "../salesman";
 
-const speed = 50;
+const speed = 0;
 
 const Home: NextPage = () => {
   const [world, setWorld] = useState(initWorld(map, randomHometown()));
@@ -77,13 +77,12 @@ const Home: NextPage = () => {
         </button>
 
         <div>
-          <b>Step #</b>
-          <div>{searchState.stepCount}</div>
+          <b>Step #{searchState.stepCount}</b>
         </div>
 
-        <div>
+        <div className="cities">
           <b>Cities found:</b>
-          <div>
+          <div className="cities-found">
             {searchState.citiesFound
               .map((city) => cityName(city, searchState.citiesFound))
               .join(",")}
@@ -96,23 +95,21 @@ const Home: NextPage = () => {
             <div>Calculating shortest path...</div>
           )}
           {searchState.phase !== "FINISHED" && <div>Not known yet...</div>}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              flexWrap: "wrap",
-            }}
-          >
-            {shortestPath?.map((city, i) => (
-              <div key={i}>
-                {cityName(
-                  searchState.citiesFound[city],
-                  searchState.citiesFound
-                )}
-                {i < searchState.citiesFound.length && <span> &#x2192; </span>}
-              </div>
-            ))}
-          </div>
+          {shortestPath !== null && (
+            <div className="results">
+              {shortestPath?.map((city, i) => (
+                <div key={i}>
+                  {cityName(
+                    searchState.citiesFound[city],
+                    searchState.citiesFound
+                  )}
+                  {i < searchState.citiesFound.length && (
+                    <span> &#x2192; </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       <div className="Map">
@@ -121,7 +118,7 @@ const Home: NextPage = () => {
       <style jsx>{`
         .container {
           display: grid;
-          grid-template-columns: 200px 0.8fr;
+          grid-template-columns: 216px 0.8fr;
           grid-template-rows: 1.4fr 0.6fr;
           gap: 8px 8px;
           grid-auto-flow: row;
@@ -130,6 +127,10 @@ const Home: NextPage = () => {
 
         .Controls {
           grid-area: Controls;
+          display: flex;
+          flex-direction: column;
+          padding: 8px;
+          border-radius: 4px;
         }
 
         .Map {
@@ -137,13 +138,7 @@ const Home: NextPage = () => {
         }
 
         .container {
-          height: 100vh;
           margin: 8px;
-        }
-
-        .Controls {
-          display: flex;
-          flex-direction: column;
         }
 
         .player {
@@ -159,8 +154,28 @@ const Home: NextPage = () => {
           margin-top: 8px;
         }
 
+        .shortestPath > .results {
+          display: flex;
+          flex-direction: row;
+          flex-wrap: wrap;
+          background-color: #95d7ae;
+          padding: 8px;
+          border-radius: 4px;
+        }
+
         .shortestPath > div > div {
           margin-right: 8px;
+        }
+
+        .cities-found {
+          background-color: #95d7ae;
+          padding: 8px;
+          border-radius: 4px;
+        }
+      `}</style>
+      <style global jsx>{`
+        body {
+          background-color: #f5f0f6;
         }
       `}</style>
     </div>

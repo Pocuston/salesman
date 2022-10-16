@@ -2,6 +2,11 @@ import { CellType, cityName, State, visited, World } from "../model";
 import { Sprite, Stage, Text } from "@inlet/react-pixi";
 import { Position, visibleFrom, X, Y } from "../position";
 import { has } from "../position-set";
+import colors from "../colors";
+
+// TODO render path to home
+// TODO render panel left
+// TODO better render of city names
 
 type MapProps = {
   state: State;
@@ -12,15 +17,24 @@ const fieldSize = 32;
 
 const Map = ({ state, world }: MapProps) => {
   return (
-    <div>
+    <div className="map">
       <Stage
         width={world.grid[0].length * fieldSize}
         height={world.grid.length * fieldSize}
-        options={{ backgroundColor: 0x1099bb }}
+        options={{ backgroundColor: colors.Fog }}
       >
         <World world={world} state={state} />
         <Salesman state={state} />
       </Stage>
+      <style jsx>{`
+        .map {
+          border-radius: 4px;
+          height: ${world.grid.length * fieldSize + 8}px;
+          padding: 4px;
+          background-color: #707070;
+          box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+        }
+      `}</style>
     </div>
   );
 };
@@ -72,9 +86,9 @@ const Cell = ({
           <Sprite image={"./resources/city.png"} x={x} y={y} />
           <Text
             text={cityName(position, state.citiesFound)}
-            x={x}
-            y={y}
-            anchor={-0.1}
+            x={x + 7}
+            y={y + 1}
+            isSprite={true}
           />
         </>
       ) : null;
