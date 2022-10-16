@@ -1,4 +1,34 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## Solution to following assignment:
+
+The traveling salesman problems abide by a salesman and a set of cities. The salesman has to visit every one of the cities starting from a certain one (e.g., the hometown) and to return to the same city. We want the salesman to be as fresh (and as rich) as possible in the end of his trip.
+
+The task is another variation of the traveling salesman problem that is in general solvable by using the graph theory.
+
+### Salesman world rules
+There is a random m x n grid (i.e. 30 x 20), consists from 1 x 1 square cells. This is salesman’s world.
+
+Salesman has no map when he appears in the world. That means he doesn’t know about the cities and walls location in advance and has to explore the map at first
+
+Salesman is allowed to travel one cell at time - up, down, left and right. Not diagonally.
+Anyway, Salesman can see what is in the all the adjacent cells around him, including diagonal ones.
+
+Cell represents either the road (grass), the city, or the wall.
+Salesman cannot hit the wall, god mode is not allowed :)
+
+Salesman will appear in random city at the start.
+
+### Objectives:
+1. Explore the whole map from the entry city to explore the whole world in the most effective way possible - by this, I mean to make sure every cell is visited.
+2. When the exploration step is completed, find the shortest path back to the very first city where the salesman appeared.
+3. When the salesman is back, the ultimate goal is to evaluate all costs (distance) permutations and pick the cheapest one so the salesman can save as much time as possible during his next trip, while visiting all cities again. EACH CITY CAN BE VISITED EXACTLY ONCE.
+
+## Implementation details
+- Exploration algorithm is a combination of [depth-first graph search](https://en.wikipedia.org/wiki/Depth-first_search) (with some heuristics) and [A* path finding algorithm](https://cs.wikipedia.org/wiki/A*).
+- Finding the shortest path back to the hometown is done by using the A* algorithm as well.
+- Finding the cheapest path permutation is done by using the [brute force approach to the salesman problem](https://www.geeksforgeeks.org/travelling-salesman-problem-set-1/). 
+  - Therefore, there is a limitation to about **10** cities, otherwise the algorithm will take too long to finish.
+  - Even on 10 cities, there is a noticeable lag after the salesman returns to the hometown and the algorithm starts to find the cheapest path permutation.
+- Map rendering via react-pixi.
 
 ## Getting Started
 
@@ -12,23 +42,4 @@ yarn dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
