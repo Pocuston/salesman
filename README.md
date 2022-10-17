@@ -1,4 +1,4 @@
-## Solution to following assignment:
+## The freshest (and richest) salesman problem
 
 The traveling salesman problems abide by a salesman and a set of cities. The salesman has to visit every one of the cities starting from a certain one (e.g., the hometown) and to return to the same city. We want the salesman to be as fresh (and as rich) as possible in the end of his trip.
 
