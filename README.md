@@ -32,8 +32,9 @@ Salesman will appear in random city at the start.
 - Jest snapshot tests are used to verify every algorithm step and avoid regression.
 
 ## Performance
-- Single algorithm steps on the map of size 30x20 usually takes about < 1 ms with some peaks around 3ms on MacBook Pro M1.
-- Solving one particular 30x20 map configuration with 11 cities is solved in 757 steps and finishes in about 620 ms on MacBook Pro M1. 
+- Exploring 30x20 test map configuration with 11 cities in 756 steps takes about 100 ms on MacBook Pro M1.
+  - Rendering in UI is slowed down to visualize the exploration. You can change the speed in the `index.tsx`.
+- Solving the salesman problem with 11 cities using brute force (11! = 3628800) takes about 2000 ms on the same machine.
 
 ## Getting Started
 
